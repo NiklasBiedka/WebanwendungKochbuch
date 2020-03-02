@@ -2,29 +2,27 @@ const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const flash = require('connect-flash');
-const session = require('express-session'); 
+const session = require('express-session');
 const mongoose = require("mongoose");
-mongoose.connect('mongodb+srv://test123:test123@cluster0-69ch7.mongodb.net/test?retryWrites=true&w=majority',{useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://admin:adminPassword@cluster0-oylja.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
 mongoose.set('useFindAndModify', false);
 const expressLayouts = require('express-ejs-layouts');
 const passport = require('passport');
 const { ensureAuthenticated } = require('./config/auth');
 
 //Passport config
-
 require('./config/passport')(passport);
 const gerichteRoutes = require("./api/routes/gerichte")
 const anmeldungenRoutes = require("./api/routes/users")
 const uploadRoutes = require("./api/routes/upload");
 const accountRoutes = require("./api/routes/account")
 
-
 //EJS
 app.engine('ejs', require('ejs').renderFile);
-app.use("/css",express.static(__dirname + "/css"));
-app.use("/bilder",express.static(__dirname + "/bilder"))
-app.use("/uploads",express.static(__dirname + "/uploads"))
-app.set('view engine','ejs')
+app.use("/css", express.static(__dirname + "/css"));
+app.use("/bilder", express.static(__dirname + "/bilder"))
+app.use("/uploads", express.static(__dirname + "/uploads"))
+app.set('view engine', 'ejs')
 
 //Express Session
 app.use(session({
@@ -38,32 +36,29 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //Connect flash
-app.use(flash()); 
+app.use(flash());
 
 app.use(express.json({
   type: ['application/json', 'text/plain']
 }))
 
 //Global Vars -> eigene Middleware
-app.use((req,res,next)=>{
+app.use((req, res, next) => {
   res.locals.succes_msg = req.flash('success_msg')
   res.locals.error_msg = req.flash('error_msg')
   res.locals.error_msg = req.flash('error_msg')
-  next(); 
+  next();
 })
-
 
 app.get('/rezept', (req, res) => {
-    var User = req.user
-    console.log(User);
-    res.render('rezept', {User: User})
+  var User = req.user
+  console.log(User);
+  res.render('rezept', { User: User })
 })
-
 
 //Mogrgan unterstützt Fehlermeldungen in der Konnsole
 app.use(morgan("dev"));
-app.use(express.urlencoded({extended: false}));
-
+app.use(express.urlencoded({ extended: false }));
 
 // CORS HANDLING --> 
 app.use((req, res, next) => {
@@ -79,13 +74,11 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
 // Routes die die Request behandeln
 app.use("/users", anmeldungenRoutes);
 app.use("/gerichte", gerichteRoutes);
 app.use("/", gerichteRoutes);
-app.use("/upload", ensureAuthenticated, uploadRoutes);
+app.use("/upload", /*ensureAuthenticated,*/ uploadRoutes);
 app.use("/account", accountRoutes);
 app.use((req, res, next) => {
   const error = new Error("Not found");
